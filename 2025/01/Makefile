@@ -1,5 +1,5 @@
 day01: day01.c
-	clang -o day01 day01.c
+	cc -o day01 day01.c
 
 test: day01 example
 	./day01 < example

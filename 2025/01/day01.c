@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 int main(void) {
   long pos = 50;
@@ -11,7 +10,7 @@ int main(void) {
   char *ins = NULL;
   size_t l = 0;
 
-  while (true) {
+  while (1) {
     nchars = getline(&ins, &l, stdin);
     // Check for end of input.
     if (nchars < 2) break;
