@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+enum op { op_plus, op_times };
+
 int main(void) {
   ssize_t nchars;
   char *line = NULL;
@@ -14,6 +16,12 @@ int main(void) {
   // chars.
   long *products = malloc(nchars * sizeof(long));
   long *sums = malloc(nchars * sizeof(long));
+
+  // Column-based number for part 2
+  long *revnums = malloc(nchars * sizeof(long));
+  for (size_t i = 0; i < (size_t)nchars; ++i) {
+    revnums[i] = 0;
+  }
 
   size_t i = 0;
   char *nptr = line;
@@ -29,13 +37,20 @@ int main(void) {
     nptr = endptr;
   }
 
+  for (size_t i = 0; line[i] != '\0'; ++i) {
+    if (line[i] >= '0' && line[i] <= '9') {
+      revnums[i] *= 10;
+      revnums[i] += line[i] - '0';
+    }
+  }
+
   // Update of sums and products if new numbers are being read
   while(1) {
     nchars = getline(&line, &linecapp, stdin);
 
-    char *fst_non_whitespace = line;
-    while (*fst_non_whitespace == ' ') ++fst_non_whitespace;
-    if (*fst_non_whitespace > '9' || *fst_non_whitespace < '0')
+    char *fst_nonspace = line;
+    while (*fst_nonspace == ' ') ++fst_nonspace;
+    if (*fst_nonspace > '9' || *fst_nonspace < '0')
       break;
 
     nptr = line;
@@ -50,22 +65,44 @@ int main(void) {
       ++i;
       nptr = endptr;
     }
+
+    for (size_t i = 0; line[i] != '\0'; ++i) {
+      if (line[i] >= '0' && line[i] <= '9') {
+	revnums[i] *= 10;
+	revnums[i] += line[i] - '0';
+      }
+    }
   }
 
   long grandtotal = 0;
-  i = 0;
-  for (nptr = line; *nptr != '\0'; ++nptr) {
-    if (*nptr == '+') {
-      grandtotal += sums[i];
-    } else if (*nptr == '*') {
-      grandtotal += products[i];
-    } else
-      continue;
-    ++i;
+  long alt_grandtotal = 0;
+  long curr;
+  size_t inumber = 0;
+  enum op curr_op;
+  for (size_t i = 0; line[i] != '\0'; ++i) {
+    if (line[i] == '+') {
+      grandtotal += sums[inumber];
+      curr_op = op_plus;
+      curr = 0;
+      ++inumber;
+    } else if (line[i] == '*') {
+      grandtotal += products[inumber];
+      curr_op = op_times;
+      curr = 1;
+      ++inumber;
+    }
+    if (revnums[i] == 0) {
+      alt_grandtotal += curr;
+    } else if (curr_op == op_plus) {
+      curr += revnums[i];
+    } else {
+      curr *= revnums[i];
+    }
   }
 
-  printf("%ld\n", grandtotal);
+  printf("%ld\n%ld\n", grandtotal, alt_grandtotal);
 
+  free(revnums);
   free(sums);
   free(products);
   free(line);
