@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 int main(void) {
   ssize_t nchars, line_len;
@@ -10,15 +9,15 @@ int main(void) {
   if (nchars < 0) {
     exit(1);
   } else {
-    line_len = nchars - 1; // substract '\n' character
+    line_len = nchars - 1; // subtract '\n' character
   }
 
-  bool *tachyons = malloc(line_len * sizeof(bool));
+  size_t *tachyons = malloc(line_len * sizeof(size_t));
   for (size_t i = 0; *(line + i) != '\n'; ++i) {
     if (*(line + i) == 'S') {
-      tachyons[i] = true;
+      tachyons[i] = 1;
     } else {
-      tachyons[i] = false;
+      tachyons[i] = 0;
     }
   }
 
@@ -30,17 +29,21 @@ int main(void) {
       break;
     for (size_t i = 0; *(line + i) != '\n'; ++i) {
       if (*(line + i) == '^' && tachyons[i]) {
-        tachyons[i] = false;
         if (i > 0)
-          tachyons[i - 1] = true;
+          tachyons[i - 1] += tachyons[i];
         if (i < line_len - 1)
-          tachyons[i + 1] = true;
+          tachyons[i + 1] += tachyons[i];
+        tachyons[i] = 0;
 	++nsplits;
       }
     }
   }
 
-  printf("%lu\n", nsplits);
+  size_t ntimelines = 0;
+  for (size_t i = 0; i < line_len; ++i)
+    ntimelines += tachyons[i];
+
+  printf("%lu\n%lu\n", nsplits, ntimelines);
 
   free(tachyons);
   free(line);
