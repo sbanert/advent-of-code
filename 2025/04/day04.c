@@ -26,6 +26,7 @@ int main(void) {
     for (size_t i = 0; i < width; ++i)
       diagram[(height - 1) * width + i] = line[i];
   }
+  free(line);
 
   size_t accessible_rolls = 0;
   for (size_t i = 0; i < height * width; ++i) {
@@ -43,8 +44,31 @@ int main(void) {
     }
   }
 
-  printf("%zu\n", accessible_rolls);
+  size_t removed_rolls = 0;
+  size_t removed = 1;
+  while (removed) {
+    removed = 0;
+    for (size_t i = 0; i < height * width; ++i) {
+      if (diagram[i] == '@') {
+	size_t neighbours = 0;
+	if (i / width && i % width && diagram[i - width - 1] == '@') ++neighbours;
+	if (i / width && diagram[i - width] == '@') ++neighbours;
+	if (i / width && i % width + 1 < width && diagram[i - width + 1] == '@') ++neighbours;
+	if (i % width && diagram[i - 1] == '@') ++neighbours;
+	if (i % width + 1 < width && diagram[i + 1] == '@') ++neighbours;
+	if (i / width + 1 < height && i % width && diagram[i + width - 1] == '@') ++neighbours;
+	if (i / width + 1 < height && diagram[i + width] == '@') ++neighbours;
+	if (i / width + 1 < height && i % width + 1 < width && diagram[i + width + 1] == '@') ++neighbours;
+        if (neighbours < 4) {
+          ++removed_rolls;
+          ++removed;
+          diagram[i] = '.';
+        }
+      }
+    }
+  }
 
-  free(line);
+  printf("%zu\n%zu\n", accessible_rolls, removed_rolls);
+
   free(diagram);
 }
