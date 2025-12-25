@@ -45,6 +45,7 @@ int main(void) {
     scanf("%ld,%ld,%ld\n", &boxes[i].x, &boxes[i].y, &boxes[i].z);
   }
 
+  // This will segfault if allocated on the stack.
   struct Conn *distances = malloc(NBOXES * (NBOXES - 1) / 2 * sizeof(struct Conn));;
   size_t k = 0;
   for (size_t i = 0; i < NBOXES; ++i) {
@@ -66,12 +67,14 @@ int main(void) {
     clusters[i] = i;
   }
 
+  size_t connected = 0;
   for (size_t i = 0; i < NCONNS; ++i) {
     size_t b1 = distances[i].box1;
     size_t b2 = distances[i].box2;
     size_t c1 = clusters[b1];
     size_t c2 = clusters[b2];
     if (c1 != c2) {
+      ++connected;
       for (size_t j = 0; j < NBOXES; ++j) {
 	if (clusters[j] == c2) clusters[j] = c1;
       }
@@ -89,5 +92,23 @@ int main(void) {
   qsort(cluster_sizes, NBOXES, sizeof(size_t), cmp_cluster);
 
   printf("%zu\n", cluster_sizes[0] * cluster_sizes[1] * cluster_sizes[2]);
+
+  for (size_t i = NCONNS; ; ++i) {
+    size_t b1 = distances[i].box1;
+    size_t b2 = distances[i].box2;
+    size_t c1 = clusters[b1];
+    size_t c2 = clusters[b2];
+    if (c1 != c2) {
+      ++connected;
+      for (size_t j = 0; j < NBOXES; ++j) {
+	if (clusters[j] == c2) clusters[j] = c1;
+      }
+    }
+    if (connected == NBOXES - 1) {
+      printf("%ld\n", boxes[distances[i].box1].x * boxes[distances[i].box2].x);
+      break;
+    }
+  }
+
   free(distances);
 }
