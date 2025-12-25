@@ -5,6 +5,16 @@ struct range {
   size_t l, u;
 };
 
+int rng_cmp(const void *pr1, const void *pr2) {
+  struct range r1 = *(struct range *)pr1;
+  struct range r2 = *(struct range *)pr2;
+  if (r1.l < r2.l)
+    return -1;
+  if (r1.l > r2.l)
+    return 1;
+  return 0;
+}
+
 int main(void) {
   struct range *ranges = malloc(sizeof(struct range));
   size_t range_count = 0;
@@ -40,7 +50,20 @@ int main(void) {
     }
   }
 
-  printf("%zu\n", nfresh);
+  size_t fresh_ids = 0;
+  size_t pos = 0;
+  qsort(ranges, range_count, sizeof(struct range), rng_cmp);
+  for (size_t i = 0; i < range_count; ++i) {
+    if (ranges[i].l >= pos) {
+      fresh_ids += ranges[i].u - ranges[i].l + 1;
+      pos = ranges[i].u + 1;
+    } else if (ranges[i].l < pos && ranges[i].u >= pos) {
+      fresh_ids += ranges[i].u - pos + 1;
+      pos = ranges[i].u + 1;
+    }
+  }
+
+  printf("%zu\n%zu\n", nfresh, fresh_ids);
 
   free(ranges);
   free(line);
